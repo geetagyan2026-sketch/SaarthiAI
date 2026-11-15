@@ -39,7 +39,7 @@ jobs:
           npm install --legacy-peer-deps
           npm run build
 
-      - name: Setup Capacitor Android
+      - name: Setup Capacitor Android & Fix Crash Issues
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android --legacy-peer-deps
           rm -f capacitor.config.ts capacitor.config.js capacitor.config.json
@@ -49,10 +49,18 @@ jobs:
           {
             "appId": "com.saarthiai.app",
             "appName": "SaarthiAI",
-            "webDir": "$WEB_DIR"
+            "webDir": "$WEB_DIR",
+            "server": {
+              "androidScheme": "https"
+            }
           }
           EOF
           npx cap add android
+          
+          # Add Google AdMob Test App ID & Internet Permission to prevent startup crash
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          sed -i 's/<\/application>/<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"\/><\/application>/g' $MANIFEST
+          
           npx cap sync android
 
       - name: Build Debug APK
